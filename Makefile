@@ -25,10 +25,13 @@ rootfs: prepare
 	@echo "==> Bootstrapping base system (Ubuntu Jammy)..."
 	sudo debootstrap --arch=amd64 jammy $(ROOTFS_DIR) http://archive.ubuntu.com/ubuntu/
 	
+	@echo "==> Enabling universe and multiverse repositories..."
+	sudo sed -i 's/jammy main/jammy main universe multiverse/g' $(ROOTFS_DIR)/etc/apt/sources.list
+	
 	@echo "==> Installing system dependencies and desktop packages inside rootfs..."
 	sudo chroot $(ROOTFS_DIR) /bin/bash -c "export DEBIAN_FRONTEND=noninteractive && \
 		apt-get update && \
-		apt-get install -y linux-image-generic systemd-sysv wayland-compositor \
+		apt-get install -y linux-image-generic systemd-sysv weston \
 		pipewire network-manager qt6-base-dev qml6-module-qtquick wine64 dxvk sudo locales"
 	
 	@echo "==> Injecting Kaming OS local files and translations..."
