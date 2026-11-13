@@ -1,0 +1,52 @@
+name: Build and Test Kaming OS
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build and test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            debootstrap \
+            squashfs-tools \
+            xorriso \
+            grub-pc-bin \
+            grub-efi-amd64-bin \
+            mtools \
+            dosfstools \
+            qemu-system-x86 \
+            qemu-utils \
+            netcat-openbsd
+
+      - name: Build Kaming OS ISO using Makefile
+        run: |
+          sudo make all
+
+      - name: Run automated boot test
+        run: |
+          sudo make test
+
+      - name: Upload ISO Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KamingOS-x86_64
+          path: build/kaming-os-*.iso
+          retention-days: 7
+
+      - name: Upload Test Screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: kaming-boot-screenshot
+          path: build/boot_screenshot.ppm
+          retention-days: 7
